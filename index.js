@@ -1,14 +1,14 @@
-const express =require('express')
-const app =express()
-const cors =require('cors')
+const express = require('express')
+const app = express()
+const cors = require('cors')
 require('dotenv').config()
-const port =process.env.PORT || 5000
+const port = process.env.PORT || 5000
 
 app.use(cors({
   origin: [
     'http://localhost:5173'
-],
-  credentials:true,
+  ],
+  credentials: true,
 }))
 app.use(express.json())
 
@@ -33,30 +33,42 @@ async function run() {
 
     const menu = client.db("BistroDB").collection("Menu");
     const reviews = client.db("BistroDB").collection("Reviews");
+    const cart = client.db("BistroDB").collection("Cart");
 
-    app.get('/menu',async(req,res) => {
-       const result = await menu.find().toArray()
-       res.send(result)
+    //menu
+    app.get('/menu', async (req, res) => {
+      const result = await menu.find().toArray()
+      res.send(result)
     })
-    app.get('/reviews',async(req,res) => {
-       const result = await reviews.find().toArray()
-       res.send(result)
+
+    //review
+    app.get('/reviews', async (req, res) => {
+      const result = await reviews.find().toArray()
+      res.send(result)
+    })
+
+    //  Cart
+   
+    app.post('/carts', async (req, res) => {
+      const body = req.body
+      const result = await cart.insertOne(body)
+      res.send(result)
     })
 
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-    
+
   }
 }
 run().catch(console.dir);
 
 
-app.get('/',(req,res)=>{
-    res.send('Food Haven')
+app.get('/', (req, res) => {
+  res.send('Food Haven')
 })
 
-app.listen(port,()=>{
-    console.log(`Food Haven || ${port}`)
+app.listen(port, () => {
+  console.log(`Food Haven || ${port}`)
 })
