@@ -42,6 +42,7 @@ async function run() {
       const result = await users.find().toArray()
       res.send(result)
     })
+
     app.post('/users', async (req, res) => {
       const user = req.body
       const query = { email: user.email }
@@ -52,6 +53,19 @@ async function run() {
       const result = await users.insertOne(user)
       res.send(result)
     })
+
+    app.patch('/users/admin/:id', async (req,res) => {
+      const id =req.params.id
+      const query = {_id: new ObjectId(id)}
+      const updatedDoc ={
+        $set:{
+          role: 'admin'
+        }
+      }
+      const result = await users.updateOne(query,updatedDoc)
+      res.send(result)
+    })
+
     app.delete('/users/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
