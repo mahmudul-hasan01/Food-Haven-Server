@@ -37,12 +37,21 @@ async function run() {
     const cart = client.db("BistroDB").collection("Cart");
 
     // Users
-   
-     app.post('/users', async (req,res) => {
+
+    app.get('/users', async (req, res) => {
+      const result = await users.find().toArray()
+      res.send(result)
+    })
+    app.post('/users', async (req, res) => {
       const user = req.body
+      const query = { email: user.email }
+      const existingUser = await users.findOne(query)
+      if (existingUser) {
+        return res.send({ message: 'user already exists', insertedId: null })
+      }
       const result = await users.insertOne(user)
       res.send(result)
-     })
+    })
 
     //menu
     app.get('/menu', async (req, res) => {
@@ -59,8 +68,8 @@ async function run() {
     //  Cart
     app.get('/carts', async (req, res) => {
       const email = req.query.email
-      const query = {email: email}
-      const result =await cart.find(query).toArray()
+      const query = { email: email }
+      const result = await cart.find(query).toArray()
       res.send(result)
     })
     app.post('/carts', async (req, res) => {
@@ -68,9 +77,9 @@ async function run() {
       const result = await cart.insertOne(body)
       res.send(result)
     })
-    app.delete('/carts/:id',async (req,res) => {
+    app.delete('/carts/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await cart.deleteOne(query)
       res.send(result)
     })
