@@ -52,6 +52,12 @@ async function run() {
       const result = await users.insertOne(user)
       res.send(result)
     })
+    app.delete('/users/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await users.deleteOne(query)
+      res.send(result)
+    })
 
     //menu
     app.get('/menu', async (req, res) => {
