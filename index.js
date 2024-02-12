@@ -43,10 +43,23 @@ async function run() {
       const token = jwt.sign(user, process.env.JWT_TOKEN, { expiresIn: '1h' })
       res.send({ token })
     })
-    
+    // verify token
+    const verifyToken = (req, res, next) => {
+      if (!req.headers.authorization) {
+        return res.status(401).send({ massege: 'forbidden access' })
+      }
+      const token = req.headers.authorization.split(' ')[1]
+      jwt.verify(token, process.env.JWT_TOKEN, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ massege: 'forbidden access' })
+        }
+        req.decoded = decoded
+        next()
+      })
+    }
 
     // Users
-    app.get('/users', async (req, res) => {
+    app.get('/users',verifyToken, async (req, res) => {
       const result = await users.find().toArray()
       res.send(result)
     })
