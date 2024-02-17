@@ -123,6 +123,12 @@ async function run() {
       res.send(result)
     })
 
+    app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
+      const body = req.body
+      const result = await menu.insertOne(body)
+      res.send(result)
+    })
+
     //review
     app.get('/reviews', async (req, res) => {
       const result = await reviews.find().toArray()
