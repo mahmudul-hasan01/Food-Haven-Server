@@ -59,12 +59,12 @@ async function run() {
     }
 
     // verify admin 
-    const verifyAdmin =async (req, res, next) => {
+    const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email
-      const query = {email: email}
+      const query = { email: email }
       const user = await users.findOne(query)
       const isAdmin = user?.role === 'admin'
-      if(!isAdmin){
+      if (!isAdmin) {
         return res.status(403).send({ massege: 'forbidden access' })
       }
       next()
@@ -123,6 +123,13 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/menu/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await menu.findOne(query)
+      res.send(result)
+    })
+
     app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
       const body = req.body
       const result = await menu.insertOne(body)
@@ -131,8 +138,24 @@ async function run() {
 
     app.delete('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await menu.deleteOne(query)
+      res.send(result)
+    })
+
+    app.patch('/menu/:id', async(req,res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const updatedDoc = {
+        $set: {
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          recipe: item.recipe,
+          image: item.image
+        }
+      }
+      const result = await menu.updateOne(query, updatedDoc)
       res.send(result)
     })
 
