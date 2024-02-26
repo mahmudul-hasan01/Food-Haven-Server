@@ -3,6 +3,7 @@ const app = express()
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
+const stripe = require('stripe')(process.env.Stripe_Secret_key)
 const port = process.env.PORT || 5000
 
 app.use(cors({
@@ -16,6 +17,7 @@ app.use(express.json())
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { default: Stripe } = require('stripe')
 const uri = `mongodb+srv://${process.env.USER_ID}:${process.env.USER_PASS}@cluster0.uoehazd.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -182,6 +184,22 @@ async function run() {
       const query = { _id: new ObjectId(id) }
       const result = await cart.deleteOne(query)
       res.send(result)
+    })
+
+    // PayMent
+
+    app.post('/payment-intent', async (req, res) => {
+      const {price} = req.body
+      const amount = parseInt(price * 100)
+      console.log(amount);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ['card']
+      })
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
     })
 
 
