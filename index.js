@@ -189,6 +189,16 @@ async function run() {
 
     // PayMent
 
+    app.get('/payment/:email',verifyToken, async (req, res) => {
+      // const payment = req.body
+      const query = {email: req?.params?.email}
+      if(req.params.email !== req.decoded.email){
+        return res.status(403).send({ massege: 'forbidden access' })
+      }
+      const result = await payments.find(query).toArray()
+      res.send(result)
+    })
+
     app.post('/payment', async (req, res) => {
       const payment = req.body
       const paymentResult = await payments.insertOne(payment)
