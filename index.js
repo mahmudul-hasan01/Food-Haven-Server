@@ -38,6 +38,7 @@ async function run() {
     const menu = client.db("BistroDB").collection("Menu");
     const reviews = client.db("BistroDB").collection("Reviews");
     const cart = client.db("BistroDB").collection("Cart");
+    const payments = client.db("BistroDB").collection("payments");
 
     // jwt
     app.post('/jwt', async (req, res) => {
@@ -145,9 +146,9 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/menu/:id', async(req,res) => {
+    app.patch('/menu/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const updatedDoc = {
         $set: {
           name: item.name,
@@ -188,10 +189,21 @@ async function run() {
 
     // PayMent
 
+    app.post('/payment', async (req, res) => {
+      const payment = req.body
+      const paymentResult = await payments.insertOne(payment)
+      const query = {
+        _id: {
+          $in: payment.cartIds.map(id => new ObjectId(id))
+        }
+      }
+      const deleteResult = await cart.deleteMany(query)
+      res.send({paymentResult,deleteResult})
+    })
+
     app.post('/payment-intent', async (req, res) => {
-      const {price} = req.body
+      const { price } = req.body
       const amount = parseInt(price * 100)
-      console.log(amount);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
