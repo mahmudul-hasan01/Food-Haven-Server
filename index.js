@@ -223,6 +223,34 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     })
+    // stats
+
+    app.get('/admin-stats',verifyToken,verifyAdmin,async(req, res) => {
+      const user = await users.estimatedDocumentCount()
+      const menuItems = await menu.estimatedDocumentCount()
+      const order = await payments.estimatedDocumentCount()
+      // this is not the best way
+      // const payment = await payments.find().toArray()
+      // const revenue = payment.reduce((total, item) => total + item.price , 0)
+      const result = await payments.aggregate([
+        {
+          $group:{
+            _id: null,
+            totalRevenue: {
+              $sum: '$price'
+            }
+          }
+        }
+      ]).toArray()
+      const revenue = result.length > 0 ? result[0].totalRevenue : 0
+
+      res.send({
+        user,
+        menuItems,
+        order,
+        revenue
+      })
+    })
 
 
     await client.db("admin").command({ ping: 1 });
